@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hava Durumu Uygulaması</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #map { height: 300px; width: 100%; margin-bottom: 20px; }
+    .weather-container { display: flex; flex-wrap: wrap; gap: 10px; }
+    .weather-card {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      width: 120px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hava Durumu Uygulaması</h1>
+  <div id="map"></div>
+  <h2>7 Günlük Tahmin</h2>
+  <div class="weather-container" id="daily-weather"></div>
+
+  <h2>Saatlik Tahmin (2 Gün)</h2>
+  <div class="weather-container" id="hourly-weather"></div>
+
+  <script>
+    let map;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 41.0082, lng: 28.9784 },
+        zoom: 8,
+      });
+
+      map.addListener("click", (e) => {
+        const lat = e.latLng.lat();
+        const lon = e.latLng.lng();
+        getWeatherData(lat, lon);
+      });
+    }
+
+    async function getWeatherData(lat, lon) {
+      const res = await fetch(`/weather?lat=${lat}&lon=${lon}`);
+      const data = await res.json();
+      renderDaily(data.daily);
+      renderHourly(data.hourly.slice(0, 24)); // İlk 24 saatlik
+    }
+
+    function renderDaily(daily) {
+      const container = document.getElementById('daily-weather');
+      container.innerHTML = '';
+      daily.forEach(day => {
+        const date = new Date(day.dt * 1000).toLocaleDateString();
+        container.innerHTML += `
+          <div class="weather-card">
+            <div>${date}</div>
+            <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png" />
+            <div>${day.weather[0].description}</div>
+            <div>Min: ${day.temp.min}°C</div>
+            <div>Max: ${day.temp.max}°C</div>
+          </div>
+        `;
+      });
+    }
+
+    function renderHourly(hourly) {
+      const container = document.getElementById('hourly-weather');
+      container.innerHTML = '';
+      hourly.forEach(hour => {
+        const time = new Date(hour.dt * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        container.innerHTML += `
+          <div class="weather-card">
+            <div>${time}</div>
+            <img src="https://openweathermap.org/img/wn/${hour.weather[0].icon}@2x.png" />
+            <div>${hour.weather[0].description}</div>
+            <div>${hour.temp}°C</div>
+          </div>
+        `;
+      });
+    }
+  </script>
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAaA3z_CKnx7bMc5Gz5b5K2tVJM4Rx6PP4&callback=initMap">
+  </script>
+</body>
+</html>

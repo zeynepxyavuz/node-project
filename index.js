@@ -1,47 +1,38 @@
-var http = require("http");
-var fs = require("fs");
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const { getWeather } = require('./services/weatherService');
 
-var server = http.createServer((req, res) => {
-  if (req.url == "/") {
-    fs.readFile("index.html", (err, html) => {
-      if (err) {
-        res.writeHead(500, { "Content-Type": "text/html" });
-        res.end("Sunucu hatası: index.html okunamadı.");
-        return;
-      }
-      res.writeHead(200, { "Content-Type": "text/html" });
-      res.write(html);
-      res.end();
-    });
+dotenv.config();
+
+const app = express();
+app.use(cors());
+
+// Statik dosya servisi
+app.use(express.static('public'));  // Public klasöründen statik dosyalar sunulacak
+
+// Ana sayfa endpoint'i
+app.get('/', (req, res) => {
+  res.send('Hoş geldiniz! API doğru çalışıyor. Hava durumu için /weather endpoint\'ini kullanın.');
+});
+
+// Hava durumu endpoint'i
+app.get('/weather', async (req, res) => {
+  const { lat, lon } = req.query;
+
+  if (!lat || !lon) {
+    return res.status(400).json({ error: 'lat ve lon parametreleri zorunludur.' });
   }
 
-  else if (req.url === "/urunler") {
-    fs.readFile("urunler.html", (err, html) => {
-      if (err) {
-        res.writeHead(500, { "Content-Type": "text/html" });
-        res.end("Sunucu hatası: urunler.html okunamadı.");
-        return;
-      }
-      res.writeHead(200, { "Content-Type": "text/html" });
-      res.write(html);
-      res.end();
-    });
-  }
-
-  else {
-    fs.readFile("404.html", (err, html) => {
-      if (err) {
-        res.writeHead(404, { "Content-Type": "text/html" });
-        res.end("404 - Sayfa bulunamadı.");
-        return;
-      }
-      res.writeHead(404, { "Content-Type": "text/html" });
-      res.write(html);
-      res.end();
-    });
+  try {
+    const data = await getWeather(lat, lon);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Hava durumu alınamadı.', detay: error.message });
   }
 });
 
-server.listen(3000, () => {
-  console.log("Node.js server running at http://localhost:3000");
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Sunucu çalışıyor: http://localhost:${PORT}`);
 });
