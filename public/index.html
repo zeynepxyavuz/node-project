@@ -15,16 +15,83 @@
       width: 120px;
       text-align: center;
     }
+    .direction-controls {
+      /* position: absolute; */
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      display: flex;
+      gap: 8px; /* inputlar arasındaki mesafe */
+      z-index: 10;
+    }
+
+    .direction-controls input {
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 150px; /* Genişlik ayarları */
+    }
+
+    .direction-controls button {
+      padding: 6px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .direction-controls button:hover {
+      background-color: #45a049;
+    }
+
+    
   </style>
 </head>
 <body>
+
   <h1>Hava Durumu Uygulaması</h1>
   <div id="map"></div>
-  <h2>7 Günlük Tahmin</h2>
+
+  <div class="direction-controls">
+    <input type="text" id="origin" placeholder="Nereden?">
+    <input type="text" id="destination" placeholder="Nereye?">
+    <input type="time" id="time" placeholder="Saat">
+    
+    <select id="interval">
+      <option value="15">15 dk</option>
+      <option value="30">30 dk</option>
+      <option value="45">45 dk</option>
+      <option value="60" selected>1 saat</option>
+    </select>
+
+    <select id="forecastDay">
+      <option value="0">Bugün</option>
+      <option value="1">1. Gün</option>
+      <option value="2">2. Gün</option>
+      <option value="3">3. Gün</option>
+      <option value="4">4. Gün</option>
+      <option value="5">5. Gün</option>
+      <option value="6">6. Gün</option>
+    </select>
+
+    <button onclick="calculateRoute()">📍 Rotayı Göster</button>
+    
+  </div>
+  
+  
+
+  <!-- <h2>7 Günlük Tahmin</h2>
   <div class="weather-container" id="daily-weather"></div>
 
   <h2>Saatlik Tahmin (2 Gün)</h2>
-  <div class="weather-container" id="hourly-weather"></div>
+  <div class="weather-container" id="hourly-weather"></div> -->
+
+  <h2>Rota Üzerindeki Hava Tahmini</h2>
+  <div class="weather-container" id="route-weather"></div>
 
   <script>
     let map;
@@ -34,6 +101,7 @@
         center: { lat: 41.0082, lng: 28.9784 },
         zoom: 8,
       });
+      
 
       map.addListener("click", (e) => {
         const lat = e.latLng.lat();
@@ -85,5 +153,60 @@
   <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAaA3z_CKnx7bMc5Gz5b5K2tVJM4Rx6PP4&callback=initMap">
   </script>
+
+<script>
+    async function calculateRoute() {
+  const origin = document.getElementById("origin").value;
+  const destination = document.getElementById("destination").value;
+  const time = document.getElementById("time").value;
+  const interval = document.getElementById("interval").value;
+  const forecastDay = document.getElementById("forecastDay").value;
+
+  if (!origin || !destination || !time) {
+    alert("Lütfen tüm alanları doldurun.");
+    return;
+  }
+
+  try {
+    const res = await fetch('/route-weather', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ origin, destination, time, interval, forecastDay })
+    });
+
+    const data = await res.json();
+
+    if (!Array.isArray(data)) {
+      console.error("Beklenen formatta değil:", data);
+      alert("Sunucudan geçerli veri alınamadı.");
+      return;
+    }
+
+    const container = document.getElementById('route-weather');
+    container.innerHTML = '';
+
+    data.forEach(item => {
+      const time = new Date(item.estimatedTime).toLocaleString('tr-TR');
+      const weather = item.weather;
+      const iconUrl = `https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`;
+      const desc = weather.weather[0].description;
+      const temp = weather.temp;
+
+      container.innerHTML += `
+        <div class="weather-card">
+          <div><strong>${time}</strong></div>
+          <img src="${iconUrl}" />
+          <div>${desc}</div>
+          <div>${temp}°C</div>
+        </div>
+      `;
+    });
+
+  } catch (error) {
+    console.error("Rota hava durumu alınamadı:", error);
+  }
+}
+  </script>
+  
 </body>
 </html>
