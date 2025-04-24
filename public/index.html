@@ -155,58 +155,65 @@
   </script>
 
 <script>
-    async function calculateRoute() {
-  const origin = document.getElementById("origin").value;
-  const destination = document.getElementById("destination").value;
-  const time = document.getElementById("time").value;
-  const interval = document.getElementById("interval").value;
-  const forecastDay = document.getElementById("forecastDay").value;
+  async function calculateRoute() {
+    const origin = document.getElementById("origin").value;
+    const destination = document.getElementById("destination").value;
+    const time = document.getElementById("time").value;
+    const interval = document.getElementById("interval").value;
+    const forecastDay = document.getElementById("forecastDay").value;
 
-  if (!origin || !destination || !time) {
-    alert("Lütfen tüm alanları doldurun.");
-    return;
-  }
-
-  try {
-    const res = await fetch('/route-weather', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ origin, destination, time, interval, forecastDay })
-    });
-
-    const data = await res.json();
-
-    if (!Array.isArray(data)) {
-      console.error("Beklenen formatta değil:", data);
-      alert("Sunucudan geçerli veri alınamadı.");
+    if (!origin || !destination || !time) {
+      alert("Lütfen tüm alanları doldurun.");
       return;
     }
 
-    const container = document.getElementById('route-weather');
-    container.innerHTML = '';
+    try {
+      const res = await fetch('/route-weather', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ origin, destination, time, interval, forecastDay })
+      });
 
-    data.forEach(item => {
-      const time = new Date(item.estimatedTime).toLocaleString('tr-TR');
-      const weather = item.weather;
-      const iconUrl = `https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`;
-      const desc = weather.weather[0].description;
-      const temp = weather.temp;
+      const data = await res.json();
 
-      container.innerHTML += `
-        <div class="weather-card">
-          <div><strong>${time}</strong></div>
-          <img src="${iconUrl}" />
-          <div>${desc}</div>
-          <div>${temp}°C</div>
-        </div>
-      `;
-    });
+      if (!Array.isArray(data)) {
+        console.error("Beklenen formatta değil:", data);
+        alert("Sunucudan geçerli veri alınamadı.");
+        return;
+      }
 
-  } catch (error) {
-    console.error("Rota hava durumu alınamadı:", error);
+      const container = document.getElementById('route-weather');
+      container.innerHTML = '';
+
+      data.forEach((item, index) => {
+        console.log(`📍 Nokta ${index + 1}:`, item);
+
+        const timeStr = new Date(item.estimatedTime).toLocaleString('tr-TR');
+        const weather = item.weather;
+        const iconUrl = `https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`;
+        const desc = weather.weather[0].description;
+        const temp = weather.temp;
+
+        // 🔥 KONUM BURADA GELİYOR!
+        const location = item.location || "Konum bilinmiyor";
+
+        container.innerHTML += `
+          <div class="weather-card">
+            <div><strong>${timeStr}</strong></div>
+            <div><strong>${location}</strong></div>
+            <img src="${iconUrl}" />
+            <div>${desc}</div>
+            <div>${temp}°C</div>
+          </div>
+        `;
+      });
+
+    } catch (error) {
+      console.error("Rota hava durumu alınamadı:", error);
+      alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+    }
   }
-}
-  </script>
+</script>
   
 </body>
 </html>
