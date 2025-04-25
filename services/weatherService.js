@@ -49,7 +49,7 @@ const haversineDistance = (coord1, coord2) => {
 };
 
 async function reverseGeocode(lat, lon) {
-  const apiKey = process.env.GOOGLE_MAPS_API_KEY;  // .env dosyandan alacak
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
   const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}&language=tr`;
 
   try {
@@ -63,7 +63,7 @@ async function reverseGeocode(lat, lon) {
       return "Konum bulunamadı";
     }
   } catch (error) {
-    console.error("Reverse geocode hatası:", error);
+
     return "Konum alınamadı";
   }
 }
