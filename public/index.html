@@ -4,9 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hava Durumu Uygulaması</title>
+  
   <style>
+    h1 {
+        color: #f098c8;    
+        text-align: center;
+    } 
+    h2 {
+        color: #f098c8;    
+    }
     body { font-family: Arial, sans-serif; padding: 20px; }
-    #map { height: 300px; width: 100%; margin-bottom: 20px; }
+    #map { height: 500px; width: 100%; margin-bottom: 20px;  }
     .weather-container { display: flex; flex-wrap: wrap; gap: 10px; }
     .weather-card {
       border: 1px solid #ccc;
@@ -17,14 +25,15 @@
     }
     .direction-controls {
       /* position: absolute; */
+      justify-content: center;
       top: 20px;
       right: 20px;
-      background: white;
+      background: #c0eadd;
       padding: 10px;
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.3);
       display: flex;
-      gap: 8px; /* inputlar arasındaki mesafe */
+      gap: 8px;
       z-index: 10;
     }
 
@@ -50,6 +59,7 @@
 
     
   </style>
+
 </head>
 <body>
 

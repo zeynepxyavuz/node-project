@@ -1,10 +1,14 @@
 require('dotenv').config();
 const axios = require('axios');
 
+const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
+const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+const MAPBOX_API_KEY = process.env.MAPBOX_API_KEY;
+
+// Hava durumu verisini alır
 const getWeather = async (lat, lon) => {
-  const API_KEY = process.env.OPENWEATHER_API_KEY;
-  const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&appid=${API_KEY}`;
-  
+  const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,alerts&units=metric&lang=tr&appid=${OPENWEATHER_API_KEY}`;
+
   try {
     const response = await axios.get(url);
     return response.data;
@@ -17,10 +21,9 @@ const getWeather = async (lat, lon) => {
   }
 };
 
-// Yeni: Şehir ismine göre koordinat bulur
+// Şehir ismine göre koordinat bulur
 const getCoordinates = async (cityName) => {
-  const API_KEY = process.env.OPENWEATHER_API_KEY;
-  const url = `http://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(cityName)}&limit=1&appid=${API_KEY}`;
+  const url = `http://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(cityName)}&limit=1&appid=${OPENWEATHER_API_KEY}`;
   
   try {
     const response = await axios.get(url);
@@ -34,9 +37,9 @@ const getCoordinates = async (cityName) => {
   }
 };
 
-// Yeni: İki koordinasyon arasındaki mesafeyi km cinsinden hesaplar
+// İki nokta arasındaki mesafeyi km cinsinden hesaplar
 const haversineDistance = (coord1, coord2) => {
-  const R = 6371; // Dünya yarıçapı (km)
+  const R = 6371;
   const dLat = (coord2.lat - coord1.lat) * Math.PI / 180;
   const dLon = (coord2.lon - coord1.lon) * Math.PI / 180;
   const lat1 = coord1.lat * Math.PI / 180;
@@ -48,25 +51,45 @@ const haversineDistance = (coord1, coord2) => {
   return R * c;
 };
 
-async function reverseGeocode(lat, lon) {
-  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}&language=tr`;
-
+// Reverse Geocoding (önce Google, sonra Mapbox ile fallback)
+const reverseGeocode = async (lat, lon) => {
   try {
-    const response = await axios.get(url);
-    const results = response.data.results;
-    if (results.length > 0) {
-      const components = results[0].address_components;
+    // Google Maps API ile konum bulmaya çalış
+    const googleUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${GOOGLE_MAPS_API_KEY}&language=tr`;
+    const googleResponse = await axios.get(googleUrl);
+    const googleResults = googleResponse.data.results;
+    
+    if (googleResults.length > 0) {
+      const components = googleResults[0].address_components;
       const city = components.find(c => c.types.includes("locality") || c.types.includes("administrative_area_level_1"));
-      return city ? city.long_name : "Konum bulunamadı";
-    } else {
-      return "Konum bulunamadı";
+      if (city) {
+        return city.long_name;
+      }
     }
-  } catch (error) {
+    
+    console.warn(`⚠️ Google konum bulamadı, Mapbox'a geçiliyor...`);
+    
+    // Google bulamazsa, Mapbox API ile konum bul
+    const mapboxUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${MAPBOX_API_KEY}&language=tr`;
+    const mapboxResponse = await axios.get(mapboxUrl);
+    const mapboxFeatures = mapboxResponse.data.features;
 
+    if (mapboxFeatures.length > 0) {
+      const place = mapboxFeatures.find(feature =>
+        feature.place_type.includes('place') || feature.place_type.includes('region')
+      );
+      if (place) {
+        return place.text;
+      }
+    }
+
+    return "Konum bulunamadı";
+
+  } catch (error) {
+    console.error("Reverse geocode hatası:", error.message);
     return "Konum alınamadı";
   }
-}
+};
 
 module.exports = {
   getWeather,
