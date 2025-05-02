@@ -51,45 +51,53 @@ const haversineDistance = (coord1, coord2) => {
   return R * c;
 };
 
-// Reverse Geocoding (önce Google, sonra Mapbox ile fallback)
 const reverseGeocode = async (lat, lon) => {
   try {
-    // Google Maps API ile konum bulmaya çalış
+    // Google Maps API ile konum bul
     const googleUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${GOOGLE_MAPS_API_KEY}&language=tr`;
     const googleResponse = await axios.get(googleUrl);
     const googleResults = googleResponse.data.results;
-    
+
     if (googleResults.length > 0) {
       const components = googleResults[0].address_components;
-      const city = components.find(c => c.types.includes("locality") || c.types.includes("administrative_area_level_1"));
-      if (city) {
-        return city.long_name;
-      }
+
+      const city = components.find(c => c.types.includes("administrative_area_level_1"))?.long_name;
+      const district = components.find(c => c.types.includes("administrative_area_level_2"))?.long_name;
+
+      // Hem şehir hem ilçe varsa örnek: İzmir - Karşıyaka
+      if (city && district) return `${city} - ${district}`;
+      if (city) return city;
+      if (district) return district;
     }
-    
+
     console.warn(`⚠️ Google konum bulamadı, Mapbox'a geçiliyor...`);
-    
-    // Google bulamazsa, Mapbox API ile konum bul
+
+    // Google başarısızsa Mapbox'a geç
     const mapboxUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${MAPBOX_API_KEY}&language=tr`;
     const mapboxResponse = await axios.get(mapboxUrl);
     const mapboxFeatures = mapboxResponse.data.features;
 
     if (mapboxFeatures.length > 0) {
-      const place = mapboxFeatures.find(feature =>
-        feature.place_type.includes('place') || feature.place_type.includes('region')
-      );
-      if (place) {
-        return place.text;
+      const cityFeature = mapboxFeatures.find(f => f.place_type.includes("place"));
+      const regionFeature = mapboxFeatures.find(f => f.place_type.includes("region"));
+
+      if (cityFeature && regionFeature) {
+        return `${regionFeature.text} - ${cityFeature.text}`;
+      } else if (cityFeature) {
+        return cityFeature.text;
+      } else if (regionFeature) {
+        return regionFeature.text;
       }
     }
 
     return "Konum bulunamadı";
-
   } catch (error) {
     console.error("Reverse geocode hatası:", error.message);
     return "Konum alınamadı";
   }
 };
+
+
 
 module.exports = {
   getWeather,

@@ -4,97 +4,133 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hava Durumu Uygulaması</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   
   <style>
-    h1 {
-        color: #f098c8;    
-        text-align: center;
-    } 
-    h2 {
-        color: #f098c8;    
-    }
     body { font-family: Arial, sans-serif; padding: 20px; }
     #map { height: 500px; width: 100%; margin-bottom: 20px;  }
-    .weather-container { display: flex; flex-wrap: wrap; gap: 10px; }
+    .weather-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
     .weather-card {
       border: 1px solid #ccc;
       border-radius: 10px;
       padding: 10px;
-      width: 120px;
       text-align: center;
+      width: 100%;
+      max-width: 150px; /* Mobilde genişliği sınırlıyoruz */
+      box-sizing: border-box;
+    }
+    .weather-card img {
+      max-width: 60px; /* Resim boyutunu da küçültelim */
+      height: auto;
+    }
+    h2 {
+      font-size: 1.5rem;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    @media (max-width: 600px) {
+      /* Küçük ekranlarda başlık font boyutunu küçült */
+      h2 {
+        font-size: 1.2rem;
+      }
+      .weather-container {
+        justify-content: space-between;
+        margin-left: 10px;
+        margin-right: 10px;
+      }
+      .weather-card {
+        width: 100%;
+        max-width: 120px; /* Daha küçük kartlar */
+      }
     }
     .direction-controls {
-      /* position: absolute; */
-      justify-content: center;
-      top: 20px;
-      right: 20px;
-      background: #c0eadd;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      display: flex;
-      gap: 8px;
-      z-index: 10;
+      position: relative;
+      margin-top: -70px;
+      margin-bottom: 20px;
+      z-index: 1;
+      box-sizing: border-box;
+      background: transparent;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      font-size: 100%;
+      font: inherit;
+      vertical-align: baseline;
     }
-
-    .direction-controls input {
-      padding: 6px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      width: 150px; /* Genişlik ayarları */
-    }
-
-    .direction-controls button {
-      padding: 6px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .direction-controls button:hover {
-      background-color: #45a049;
-    }
-
-    
   </style>
-
 </head>
 <body>
 
-  <h1>Hava Durumu Uygulaması</h1>
-  <div id="map"></div>
+  <div class="container text-center my-4">
+    <h1 class="display-5">🌤 Hava Durumu Uygulaması</h1>
+  </div>
 
-  <div class="direction-controls">
-    <input type="text" id="origin" placeholder="Nereden?">
-    <input type="text" id="destination" placeholder="Nereye?">
-    <input type="time" id="time" placeholder="Saat">
-    
-    <select id="interval">
-      <option value="15">15 dk</option>
-      <option value="30">30 dk</option>
-      <option value="45">45 dk</option>
-      <option value="60" selected>1 saat</option>
-    </select>
+  <!-- Harita Ortalı (Responsive) -->
+  <div class="container my-4">
+    <div class="row justify-content-center">
+      <div class="col-md-12">
+        <div id="map"></div>
+      </div>
+    </div>
+  </div>
 
-    <select id="forecastDay">
-      <option value="0">Bugün</option>
-      <option value="1">1. Gün</option>
-      <option value="2">2. Gün</option>
-      <option value="3">3. Gün</option>
-      <option value="4">4. Gün</option>
-      <option value="5">5. Gün</option>
-      <option value="6">6. Gün</option>
-    </select>
-
-    <button onclick="calculateRoute()">📍 Rotayı Göster</button>
-    
+  <div class="container my-4">
+    <div class="card p-4 shadow-sm">
+      <h5 class="mb-3 text-center">🚗 Rota Üzerinden Hava Durumu</h5>
+      
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input type="text" class="form-control" id="origin" placeholder="Nereden (İl veya İlçe)">
+        </div>
+        <div class="col-md-4">
+          <input type="text" class="form-control" id="destination" placeholder="Nereye (İl veya İlçe)">
+        </div>
+  
+        <div class="col-md-4">
+          <label for="time" class="form-label">Başlangıç Saati</label>
+          <input type="time" class="form-control" id="time">
+        </div>
+  
+        <div class="col-md-4">
+          <label for="interval" class="form-label">Tahmin Aralığı</label>
+          <select id="interval" class="form-select">
+            <option value="15">15 dk</option>
+            <option value="30">30 dk</option>
+            <option value="45">45 dk</option>
+            <option value="60" selected>1 saat</option>
+          </select>
+        </div>
+  
+        <div class="col-md-4">
+          <label for="forecastDay" class="form-label">Gün Seç</label>
+          <select id="forecastDay" class="form-select">
+            <option value="0">Bugün</option>
+            <option value="1">1. Gün</option>
+            <option value="2">2. Gün</option>
+            <option value="3">3. Gün</option>
+            <option value="4">4. Gün</option>
+            <option value="5">5. Gün</option>
+            <option value="6">6. Gün</option>
+          </select>
+        </div>
+  
+        <div class="col-12 d-grid">
+          <button class="btn btn-primary" onclick="calculateRoute()">📍 Rotayı Göster</button>
+        </div>
+      </div>
+    </div>
   </div>
   
-  
-
   <!-- <h2>7 Günlük Tahmin</h2>
+  <p id="selected-address" class="text-center mt-2"></p>
   <div class="weather-container" id="daily-weather"></div>
 
   <h2>Saatlik Tahmin (2 Gün)</h2>
@@ -107,6 +143,7 @@
     let map;
     let directionsService;
     let directionsRenderer;
+    let originAutocomplete, destinationAutocomplete;
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
@@ -117,12 +154,28 @@
       directionsService = new google.maps.DirectionsService();
       directionsRenderer = new google.maps.DirectionsRenderer();
       directionsRenderer.setMap(map);
+
+      const geocoder = new google.maps.Geocoder();
       
       map.addListener("click", (e) => {
         const lat = e.latLng.lat();
         const lon = e.latLng.lng();
         getWeatherData(lat, lon);
       });
+
+      initAutocomplete();
+    }
+
+    function initAutocomplete() {
+      originAutocomplete = new google.maps.places.Autocomplete(
+        document.getElementById('origin'),
+        { types: ['(cities)'], componentRestrictions: { country: 'tr' } }
+      );
+
+      destinationAutocomplete = new google.maps.places.Autocomplete(
+        document.getElementById('destination'),
+        { types: ['(cities)'], componentRestrictions: { country: 'tr' } }
+      );
     }
 
     async function getWeatherData(lat, lon) {
@@ -164,70 +217,66 @@
         `;
       });
     }
-  </script>
-  <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAaA3z_CKnx7bMc5Gz5b5K2tVJM4Rx6PP4&callback=initMap">
-  </script>
 
-<script>
-  async function calculateRoute() {
-    const origin = document.getElementById("origin").value;
-    const destination = document.getElementById("destination").value;
-    const time = document.getElementById("time").value;
-    const interval = document.getElementById("interval").value;
-    const forecastDay = document.getElementById("forecastDay").value;
+    async function calculateRoute() {
+      const origin = document.getElementById("origin").value;
+      const destination = document.getElementById("destination").value;
+      const time = document.getElementById("time").value;
+      const interval = document.getElementById("interval").value;
+      const forecastDay = document.getElementById("forecastDay").value;
 
-    if (!origin || !destination || !time) {
-      alert("Lütfen tüm alanları doldurun.");
-      return;
-    }
-
-    
-    try {
-      const res = await fetch('/route-weather', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ origin, destination, time, interval, forecastDay })
-      });
-
-      const data = await res.json();
-
-      if (!Array.isArray(data)) {
-        console.error("Beklenen formatta değil:", data);
-        alert("Sunucudan geçerli veri alınamadı.");
+      if (!origin || !destination || !time) {
+        alert("Lütfen tüm alanları doldurun.");
         return;
       }
 
-      const container = document.getElementById('route-weather');
-      container.innerHTML = '';
+      try {
+        const res = await fetch('/route-weather', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ origin, destination, time, interval, forecastDay })
+        });
 
-      data.forEach((item, index) => {
-        console.log(`📍 Nokta ${index + 1}:`, item);
+        const data = await res.json();
 
-        const timeStr = new Date(item.estimatedTime).toLocaleString('tr-TR');
-        const weather = item.weather;
-        const iconUrl = `https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`;
-        const desc = weather.weather[0].description;
-        const temp = weather.temp;
-        const location = item.location || "Konum bilinmiyor";
+        if (!Array.isArray(data)) {
+          console.error("Beklenen formatta değil:", data);
+          alert("Sunucudan geçerli veri alınamadı.");
+          return;
+        }
 
-        container.innerHTML += `
-          <div class="weather-card">
-            <div><strong>${timeStr}</strong></div>
-            <div><strong>${location}</strong></div>
-            <img src="${iconUrl}" />
-            <div>${desc}</div>
-            <div>${temp}°C</div>
-          </div>
-        `;
-      });
+        const container = document.getElementById('route-weather');
+        container.innerHTML = '';
 
-    } catch (error) {
-      console.error("Rota hava durumu alınamadı:", error);
-      alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+        data.forEach((item, index) => {
+          const timeStr = new Date(item.estimatedTime).toLocaleString('tr-TR');
+          const weather = item.weather;
+          const iconUrl = `https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`;
+          const desc = weather.weather[0].description;
+          const temp = weather.temp;
+          const location = item.location || "Konum bilinmiyor";
+
+          container.innerHTML += `
+            <div class="weather-card">
+              <div><strong>${timeStr}</strong></div>
+              <div><strong>${location}</strong></div>
+              <img src="${iconUrl}" />
+              <div>${desc}</div>
+              <div>${temp}°C</div>
+            </div>
+          `;
+        });
+
+      } catch (error) {
+        console.error("Rota hava durumu alınamadı:", error);
+        alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+      }
     }
-  }
-</script>
-  
+  </script>
+
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAaA3z_CKnx7bMc5Gz5b5K2tVJM4Rx6PP4&libraries=places&callback=initMap">
+  </script>
+
 </body>
 </html>
