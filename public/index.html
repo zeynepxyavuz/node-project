@@ -7,64 +7,168 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    #map { height: 500px; width: 100%; margin-bottom: 20px;  }
-    .weather-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 20px;
-      box-sizing: border-box;
-    }
-    .weather-card {
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 10px;
-      text-align: center;
-      width: 100%;
-      max-width: 150px; /* Mobilde genişliği sınırlıyoruz */
-      box-sizing: border-box;
-    }
-    .weather-card img {
-      max-width: 60px; /* Resim boyutunu da küçültelim */
-      height: auto;
-    }
-    h2 {
-      font-size: 1.5rem;
-      text-align: center;
-      margin-bottom: 20px;
-      color: #333;
-    }
-    @media (max-width: 600px) {
-      /* Küçük ekranlarda başlık font boyutunu küçült */
-      h2 {
-        font-size: 1.2rem;
-      }
-      .weather-container {
-        justify-content: space-between;
-        margin-left: 10px;
-        margin-right: 10px;
-      }
-      .weather-card {
-        width: 100%;
-        max-width: 120px; /* Daha küçük kartlar */
-      }
-    }
-    .direction-controls {
-      position: relative;
-      margin-top: -70px;
-      margin-bottom: 20px;
-      z-index: 1;
-      box-sizing: border-box;
-      background: transparent;
-      margin: 0;
-      padding: 0;
-      border: 0;
-      font-size: 100%;
-      font: inherit;
-      vertical-align: baseline;
-    }
+    body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 20px;
+  background: #f0f4f8;
+  color: #333;
+}
+
+h1.display-5 {
+  font-size: 2.5rem;
+  color: #2c3e50;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin-top: 30px;
+  text-align: center;
+  color: #34495e;
+}
+
+#map {
+  height: 500px;
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.harita-alti{
+    position: relative;
+    margin-top: -70px;
+    margin-bottom: 20px;
+    z-index: 1;
+}
+
+.seyehat-bilgiler {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border-radius: 6px;
+  width: 100%;
+  box-shadow: 0 3px 30px rgb(191, 198, 206);
+}
+.input-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.input-row > div {
+  flex: 1;
+  min-width: 200px;
+}
+.harita-alti-ust {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 15px;
+}
+.origin{
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #dae6ec;
+    padding: 15px;
+}
+.destination{
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #dae6ec;
+    padding: 15px;
+}
+.saat-gun{
+  display: flex;
+  width: 40%;
+}
+.seyehat-bilgiler-alt{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: #e6eff4;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    font-size: 14px;
+    flex-wrap: wrap;
+}
+.interval, .buton-gonder {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.buton-gonder button {
+    background-color: #198754;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.buton-gonder button:hover {
+    background-color: #157347;
+}
+#route-weather {
+  width: 100%;
+  max-width: 900px; /* İstediğin kadar daraltabilirsin */
+  margin: 0 auto;
+  padding: 20px 10px;
+}
+.weather-card {
+    display: flex;
+    width: 100%;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #dae6ec !important;
+    background: #f6fafd;
+    border-left: 2px solid greenyellow;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    background-color: #f0f4f8;
+    margin-bottom: 15px;
+}
+
+.weather-card div,
+.weather-card img {
+  flex: 1;
+  min-width: 100px;
+  text-align: center;
+}
+
+.weather-date {
+  font-weight: bold;
+  font-size: 16px;
+  color: #333;
+}
+
+.weather-icon {
+  width: 50px;
+  height: 50px;
+}
+
+.weather-description {
+  text-transform: capitalize;
+  color: #666;
+}
+
+.weather-temp-min,
+.weather-temp-max {
+  color: #007BFF;
+}
+
+.weather-wind {
+  font-style: italic;
+  color: #444;
+}
+
+
   </style>
 </head>
 <body>
@@ -73,8 +177,13 @@
     <h1 class="display-5">🌤 Hava Durumu Uygulaması</h1>
   </div>
 
-  <!-- Harita Ortalı (Responsive) -->
-  <div class="container my-4">
+  <div class="container text-center my-3">
+    <button id="show-map-btn" class="btn btn-success d-none">🗺 Haritayı Göster</button>
+    <button id="hide-map-btn" class="btn btn-danger d-none">❌ Haritayı Gizle</button>
+  </div>
+
+ <!-- harita ortala -->
+  <div class="map">
     <div class="row justify-content-center">
       <div class="col-md-12">
         <div id="map"></div>
@@ -82,24 +191,30 @@
     </div>
   </div>
 
-  <div class="container my-4">
-    <div class="card p-4 shadow-sm">
-      <h5 class="mb-3 text-center">🚗 Rota Üzerinden Hava Durumu</h5>
-      
-      <div class="row g-3">
-        <div class="col-md-4">
+  <div class="harita-alti">
+  <div class="harita-alti-ust">
+    <div class="seyehat-bilgiler">
+      <!-- Yatay düzenli giriş alanları -->
+      <div class="input-row">
+        <div class="origin">
           <input type="text" class="form-control" id="origin" placeholder="Nereden (İl veya İlçe)">
         </div>
-        <div class="col-md-4">
+        <div class="destination">
           <input type="text" class="form-control" id="destination" placeholder="Nereye (İl veya İlçe)">
         </div>
-  
-        <div class="col-md-4">
+        <div class="first">
           <label for="time" class="form-label">Başlangıç Saati</label>
           <input type="time" class="form-control" id="time">
         </div>
-  
-        <div class="col-md-4">
+        <div class="forecastday">
+          <label for="forecastDay" class="form-label">Gün Seç</label>
+          <select id="forecastDay" class="form-select"></select>
+        </div>
+      </div>
+
+      <!-- Alt kısım: tahmin aralığı ve buton -->
+      <div class="seyehat-bilgiler-alt">
+        <div class="interval">
           <label for="interval" class="form-label">Tahmin Aralığı</label>
           <select id="interval" class="form-select">
             <option value="15">15 dk</option>
@@ -107,176 +222,52 @@
             <option value="45">45 dk</option>
             <option value="60" selected>1 saat</option>
           </select>
-        </div>
+        
+        <script>
+          const select = document.getElementById("forecastDay");
+        
+          const daysOfWeek = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
+        
+          for (let i = 0; i < 7; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() + i);
+        
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+        
+            const formattedDate = `${day}.${month}.${year}`;
+            const dayName = i === 0 ? "Bugün" : daysOfWeek[date.getDay()];
+        
+            const option = document.createElement("option");
+            option.value = i;
+            option.textContent = `${formattedDate} - ${dayName}`;
+        
+            select.appendChild(option);
+          }
+        </script>
+        <div class="buton-gonder">
   
-        <div class="col-md-4">
-          <label for="forecastDay" class="form-label">Gün Seç</label>
-          <select id="forecastDay" class="form-select">
-            <option value="0">Bugün</option>
-            <option value="1">1. Gün</option>
-            <option value="2">2. Gün</option>
-            <option value="3">3. Gün</option>
-            <option value="4">4. Gün</option>
-            <option value="5">5. Gün</option>
-            <option value="6">6. Gün</option>
-          </select>
+        <div class="rota-buton">
+          <button id="calculateBtn" onclick="calculateRoute()">📍 Rotayı Göster</button>
         </div>
-  
-        <div class="col-12 d-grid">
-          <button class="btn btn-primary" onclick="calculateRoute()">📍 Rotayı Göster</button>
+        </div>
         </div>
       </div>
-    </div>
+    
   </div>
-  
-  <!-- <h2>7 Günlük Tahmin</h2>
-  <p id="selected-address" class="text-center mt-2"></p>
-  <div class="weather-container" id="daily-weather"></div>
-
-  <h2>Saatlik Tahmin (2 Gün)</h2>
-  <div class="weather-container" id="hourly-weather"></div> -->
 
   <h2>Rota Üzerindeki Hava Tahmini</h2>
   <div class="weather-container" id="route-weather"></div>
 
-  <script>
-    let map;
-    let directionsService;
-    let directionsRenderer;
-    let originAutocomplete, destinationAutocomplete;
 
-    function initMap() {
-      map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 41.0082, lng: 28.9784 },
-        zoom: 10,
-      });
+<script src="/assets/script.js"></script>
 
-      directionsService = new google.maps.DirectionsService();
-      directionsRenderer = new google.maps.DirectionsRenderer();
-      directionsRenderer.setMap(map);
-
-      const geocoder = new google.maps.Geocoder();
-      
-      map.addListener("click", (e) => {
-        const lat = e.latLng.lat();
-        const lon = e.latLng.lng();
-        getWeatherData(lat, lon);
-      });
-
-      initAutocomplete();
-    }
-
-    function initAutocomplete() {
-      originAutocomplete = new google.maps.places.Autocomplete(
-        document.getElementById('origin'),
-        { types: ['(cities)'], componentRestrictions: { country: 'tr' } }
-      );
-
-      destinationAutocomplete = new google.maps.places.Autocomplete(
-        document.getElementById('destination'),
-        { types: ['(cities)'], componentRestrictions: { country: 'tr' } }
-      );
-    }
-
-    async function getWeatherData(lat, lon) {
-      const res = await fetch(`/weather?lat=${lat}&lon=${lon}`);
-      const data = await res.json();
-      renderDaily(data.daily);
-      renderHourly(data.hourly.slice(0, 24)); // İlk 24 saatlik
-    }
-
-    function renderDaily(daily) {
-      const container = document.getElementById('daily-weather');
-      container.innerHTML = '';
-      daily.forEach(day => {
-        const date = new Date(day.dt * 1000).toLocaleDateString();
-        container.innerHTML += `
-          <div class="weather-card">
-            <div>${date}</div>
-            <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png" />
-            <div>${day.weather[0].description}</div>
-            <div>Min: ${day.temp.min}°C</div>
-            <div>Max: ${day.temp.max}°C</div>
-          </div>
-        `;
-      });
-    }
-
-    function renderHourly(hourly) {
-      const container = document.getElementById('hourly-weather');
-      container.innerHTML = '';
-      hourly.forEach(hour => {
-        const time = new Date(hour.dt * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        container.innerHTML += `
-          <div class="weather-card">
-            <div>${time}</div>
-            <img src="https://openweathermap.org/img/wn/${hour.weather[0].icon}@2x.png" />
-            <div>${hour.weather[0].description}</div>
-            <div>${hour.temp}°C</div>
-          </div>
-        `;
-      });
-    }
-
-    async function calculateRoute() {
-      const origin = document.getElementById("origin").value;
-      const destination = document.getElementById("destination").value;
-      const time = document.getElementById("time").value;
-      const interval = document.getElementById("interval").value;
-      const forecastDay = document.getElementById("forecastDay").value;
-
-      if (!origin || !destination || !time) {
-        alert("Lütfen tüm alanları doldurun.");
-        return;
-      }
-
-      try {
-        const res = await fetch('/route-weather', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ origin, destination, time, interval, forecastDay })
-        });
-
-        const data = await res.json();
-
-        if (!Array.isArray(data)) {
-          console.error("Beklenen formatta değil:", data);
-          alert("Sunucudan geçerli veri alınamadı.");
-          return;
-        }
-
-        const container = document.getElementById('route-weather');
-        container.innerHTML = '';
-
-        data.forEach((item, index) => {
-          const timeStr = new Date(item.estimatedTime).toLocaleString('tr-TR');
-          const weather = item.weather;
-          const iconUrl = `https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`;
-          const desc = weather.weather[0].description;
-          const temp = weather.temp;
-          const location = item.location || "Konum bilinmiyor";
-
-          container.innerHTML += `
-            <div class="weather-card">
-              <div><strong>${timeStr}</strong></div>
-              <div><strong>${location}</strong></div>
-              <img src="${iconUrl}" />
-              <div>${desc}</div>
-              <div>${temp}°C</div>
-            </div>
-          `;
-        });
-
-      } catch (error) {
-        console.error("Rota hava durumu alınamadı:", error);
-        alert("Bir hata oluştu. Lütfen tekrar deneyin.");
-      }
-    }
-  </script>
-
-  <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAaA3z_CKnx7bMc5Gz5b5K2tVJM4Rx6PP4&libraries=places&callback=initMap">
-  </script>
+<script
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAaA3z_CKnx7bMc5Gz5b5K2tVJM4Rx6PP4&libraries=places&callback=initMap"
+  async
+  defer
+></script>
 
 </body>
 </html>
