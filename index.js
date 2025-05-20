@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { getWeather, getCoordinates, reverseGeocode, getRouteInfo } = require('./services/service');
+const { getWeather, getCoordinates, reverseGeocode, getRouteInfo, getCoordinatesFlexible } = require('./services/service');
 const dayjs = require('dayjs');
 const axios = require('axios');
 dotenv.config();
@@ -13,7 +13,7 @@ app.use(express.static('public'));
 
 
 app.post('/route-weather', async (req, res) => {
-  const { origin, destination, time, forecastDay, interval } = req.body;
+  const { origin, destination, time, forecastDay, interval, routeIndex } = req.body;
 
   if (!origin || !destination || !time || forecastDay === undefined || interval === undefined) {
     return res.status(400).json({ error: 'Tüm alanlar zorunludur.' });
@@ -21,15 +21,22 @@ app.post('/route-weather', async (req, res) => {
 
   const parsedInterval = parseInt(interval, 10);
   const parsedDay = parseInt(forecastDay, 10);
+  const selectedRouteIndex = routeIndex !== undefined ? parseInt(routeIndex, 10) : 0;
 
   try {
-    const originCoord = await getCoordinates(origin);
-    const destinationCoord = await getCoordinates(destination);
+    const originCoord = await getCoordinatesFlexible(origin);
+    const destinationCoord = await getCoordinatesFlexible(destination);  
 
     if (!originCoord || !destinationCoord) {
       return res.status(404).json({ error: 'Konumlar bulunamadı' });
     }
-    const distance = await getRouteInfo(origin, destination);
+    // getRouteInfo fonksiyonunu routeIndex parametreli hale getir
+    const distance = await getRouteInfo(origin, destination, selectedRouteIndex);
+
+    if (!distance) {
+      return res.status(500).json({ error: 'Rota bilgisi alınamadı' });
+    }
+
     const avgSpeed = 80; // km/h
     const travelMinutes = (distance.distanceKm / avgSpeed) * 60;
     const numberOfPoints = Math.ceil(travelMinutes / parsedInterval);
@@ -93,6 +100,7 @@ app.post('/route-weather', async (req, res) => {
         weather: {
           temp: finalHourData.temp,
           weather: finalHourData.weather,
+          wind_speed: finalHourData.wind_speed,
           time: dayjs(finalHourData.dt * 1000).format('HH:mm')
         }
       });

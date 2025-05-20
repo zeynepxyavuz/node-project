@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hava Durumu Uygulaması</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
   <style>
     body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -19,14 +20,28 @@ h1.display-5 {
   color: #2c3e50;
 }
 
-h2 {
+/* h2 {
   font-size: 1.5rem;
   margin-top: 30px;
   text-align: center;
   color: #34495e;
+} */
+
+#toggleMap {
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer
+}
+
+#toggleMap:hover {
+  background-color: #084298;
 }
 
 #map {
+  display:block;
   height: 500px;
   width: 100%;
   border-radius: 10px;
@@ -36,7 +51,7 @@ h2 {
 
 .harita-alti{
     position: relative;
-    margin-top: -70px;
+    margin-top: 0px;
     margin-bottom: 20px;
     z-index: 1;
 }
@@ -51,13 +66,12 @@ h2 {
 }
 .input-row {
   display: flex;
-  gap: 10px;
+  /* gap: 10px; */
   flex-wrap: wrap;
-  margin-bottom: 10px;
+  /* margin-bottom: 5px; */
 }
 
 .input-row > div {
-  flex: 1;
   min-width: 200px;
 }
 .harita-alti-ust {
@@ -67,39 +81,132 @@ h2 {
   gap: 10px;
   padding: 15px;
 }
-.origin{
+.input-row .origin{
     width: 30%;
     display: flex;
     flex-direction: column;
     border-right: 1px solid #dae6ec;
     padding: 15px;
 }
-.destination{
+.input-row .destination{
     width: 30%;
     display: flex;
     flex-direction: column;
     border-right: 1px solid #dae6ec;
     padding: 15px;
 }
-.saat-gun{
+#destination .form-control{
+    border-bottom: 1px solid #dae6ec !important;
+    margin-left: 10px;
+    border: 0px;
+    font-size: 15px;
+    border-radius: 3px;
+    height: 34px;
+    width: 90%;
+}
+#origin .form-control{
+    border-bottom: 1px solid #dae6ec !important;
+    margin-left: 10px;
+    border: 0px;
+    font-size: 15px;
+    border-radius: 3px;
+    height: 34px;
+    width: 90%;
+}
+.origin .form-label{
+    width: 100%;
+    display: flex;
+    /* padding-top: 5px; */
+    margin-left: 10px;
+    padding-bottom: 5px;
+    font-size: 12px;
+    color: #4c566a;
+    align-items: center;
+    letter-spacing: .1em;
+}
+.destination .form-label{
+    width: 100%;
+    display: flex;
+    /* padding-top: 5px; */
+    margin-left: 10px;
+    padding-bottom: 5px;
+    font-size: 12px;
+    color: #4c566a;
+    align-items: center;
+    letter-spacing: .1em;
+}
+.forecastday{
+  flex: 1;
+  padding: 15px;
   display: flex;
-  width: 40%;
+  flex-direction: column;
+  border-right: 1px solid #dae6ec;
+}
+.forecastday .form-label{
+  margin-left:10px;
+  width: 100%;
+  display: flex;
+  /* padding-top: 5px; */
+  padding-bottom: 5px;
+  font-size: 12px;
+  color: #4c566a;
+  align-items: center;
+  letter-spacing: .1em;
+}
+.forecastday .form-select{
+  width: 100%;
+  display: flex;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  font-size: 12px;
+  color: #4c566a;
+  align-items: center;
+  letter-spacing: .1em;
+}
+.first{
+    flex: 1;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #dae6ec;
+}
+.first .form-label{
+    margin-left: 10px;
+    width: 100%;
+    display: flex;
+    /* padding-top: 5px; */
+    padding-bottom: 5px;
+    font-size: 12px;
+    color: #4c566a;
+    align-items: center;
+    letter-spacing: .1em;
+}
+.first .form-control{
+    background: #e6eff4;
+    height: 30px;
+    border: none;
 }
 .seyehat-bilgiler-alt{
     display: flex;
+    padding: 10px;
     align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px;
+    width: 100%;
     background: #e6eff4;
     border-bottom-left-radius: 6px;
     border-bottom-right-radius: 6px;
+    padding-left: 10px;
+    color: #4c566a;
     font-size: 14px;
-    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 .interval, .buton-gonder {
     display: flex;
     align-items: center;
     gap: 10px;
+}
+.interval .my-select{
+    height: 30px;
+    border: none;
 }
 .buton-gonder button {
     background-color: #198754;
@@ -114,38 +221,42 @@ h2 {
 }
 #route-weather {
   width: 100%;
-  max-width: 900px; /* İstediğin kadar daraltabilirsin */
   margin: 0 auto;
   padding: 20px 10px;
 }
 .weather-card {
-    display: flex;
-    width: 100%;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #dae6ec !important;
-    background: #f6fafd;
-    border-left: 2px solid greenyellow;
-    border-radius: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 15px;
-    background-color: #f0f4f8;
-    margin-bottom: 15px;
+  display: flex;
+  width: 100%;
+  padding: 10px 20px; /* kart içi boşluğu düşürdük */
+  margin-bottom: 10px;
+  background: #f0f4f8;
+  border-left: 4px solid green;
+  border-radius: 50px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: nowrap;
+  min-height: 70px; 
 }
 
-.weather-card div,
-.weather-card img {
+.weather-card div {
   flex: 1;
-  min-width: 100px;
   text-align: center;
+  font-size: 14px;
+}
+
+.weather-card img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
 }
 
 .weather-date {
-  font-weight: bold;
-  font-size: 16px;
-  color: #333;
+    color: #4c566a;
+    border-radius: 25px;
+    background: #dae6ec;
+    margin-right: 10px;
+    padding: 5px;
 }
 
 .weather-icon {
@@ -168,6 +279,80 @@ h2 {
   color: #444;
 }
 
+.weather-card .temp-windspeed{
+    display: flex;
+  justify-content: space-between; /* ya da center / flex-start */
+  align-items: center;
+  gap: 10px;
+}
+.weather-card .loc{
+    display: flex;
+  justify-content: space-between; /* ya da center / flex-start */
+  align-items: center;
+  gap: 10px;
+}
+
+.weather-icon {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.display-5 {
+  font-size: 1.8rem;
+}
+
+#loader {
+    display: none;
+    width: 100%;
+    padding: 40px 0;
+}
+.inline-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+/* mobil */
+@media (max-width: 768px) {
+  .harita-alti-ust {
+    flex-direction: column;
+    gap: 0;
+    padding: 10px;
+  }
+
+  .origin,
+  .destination,
+  .saat-gun {
+    width: 100% !important;
+    border-right: none;
+    padding: 10px 0;
+  }
+
+  .input-row {
+    flex-direction: column;
+  }
+
+  .seyehat-bilgiler-alt {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 10px;
+    font-size: 12px;
+  }}
+
+  @media (max-width: 768px) {
+  .weather-card .temp-windspeed,
+  .weather-card .loc {
+    flex-direction: column;
+  }
+}
+
+#map {
+    height: 300px;
+  }
 
   </style>
 </head>
@@ -177,19 +362,6 @@ h2 {
     <h1 class="display-5">🌤 Hava Durumu Uygulaması</h1>
   </div>
 
-  <div class="container text-center my-3">
-    <button id="show-map-btn" class="btn btn-success d-none">🗺 Haritayı Göster</button>
-    <button id="hide-map-btn" class="btn btn-danger d-none">❌ Haritayı Gizle</button>
-  </div>
-
- <!-- harita ortala -->
-  <div class="map">
-    <div class="row justify-content-center">
-      <div class="col-md-12">
-        <div id="map"></div>
-      </div>
-    </div>
-  </div>
 
   <div class="harita-alti">
   <div class="harita-alti-ust">
@@ -197,11 +369,13 @@ h2 {
       <!-- Yatay düzenli giriş alanları -->
       <div class="input-row">
         <div class="origin">
-          <input type="text" class="form-control" id="origin" placeholder="Nereden (İl veya İlçe)">
+      <label for="origin" class="form-label">Nereden?</label>
+      <input type="text" class="form-control" id="origin" placeholder="Yolculuk Nereden?">
         </div>
-        <div class="destination">
-          <input type="text" class="form-control" id="destination" placeholder="Nereye (İl veya İlçe)">
-        </div>
+      <div class="destination">
+      <label for="destination" class="form-label">Nereye?</label>
+      <input type="text" class="form-control" id="destination" placeholder="Yolculuk Nereye?">
+      </div>
         <div class="first">
           <label for="time" class="form-label">Başlangıç Saati</label>
           <input type="time" class="form-control" id="time">
@@ -215,56 +389,45 @@ h2 {
       <!-- Alt kısım: tahmin aralığı ve buton -->
       <div class="seyehat-bilgiler-alt">
         <div class="interval">
-          <label for="interval" class="form-label">Tahmin Aralığı</label>
-          <select id="interval" class="form-select">
+          <label for="interval" class="form-label">Hava durumu,</label>
+          <select id="interval" class="my-select">
             <option value="15">15 dk</option>
             <option value="30">30 dk</option>
             <option value="45">45 dk</option>
             <option value="60" selected>1 saat</option>
           </select>
+          <div class="interval-text" class="form-label">aralıklarla getirilsin</div>
         
-        <script>
-          const select = document.getElementById("forecastDay");
-        
-          const daysOfWeek = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
-        
-          for (let i = 0; i < 7; i++) {
-            const date = new Date();
-            date.setDate(date.getDate() + i);
-        
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-        
-            const formattedDate = `${day}.${month}.${year}`;
-            const dayName = i === 0 ? "Bugün" : daysOfWeek[date.getDay()];
-        
-            const option = document.createElement("option");
-            option.value = i;
-            option.textContent = `${formattedDate} - ${dayName}`;
-        
-            select.appendChild(option);
-          }
-        </script>
         <div class="buton-gonder">
   
         <div class="rota-buton">
           <button id="calculateBtn" onclick="calculateRoute()">📍 Rotayı Göster</button>
         </div>
+
         </div>
         </div>
       </div>
     
   </div>
 
-  <h2>Rota Üzerindeki Hava Tahmini</h2>
+  <h2></h2>
+    <div id="map" style="height: 400px; width: 100%; display: none;"></div>
+    <a id="openInMapsBtn" style="display: none;" class="btn btn-outline-primary" target="_blank">
+             Google Haritalar'da Aç
+        </a>
   <div class="weather-container" id="route-weather"></div>
+  <div id="loader" style="display: none; text-align: center; margin-top: 20px;">
+    <img src="assets/images/loader.svg" alt="Yükleniyor..." width="80">
+  </div>
+
+   
+
 
 
 <script src="/assets/script.js"></script>
 
 <script
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAaA3z_CKnx7bMc5Gz5b5K2tVJM4Rx6PP4&libraries=places&callback=initMap"
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCnm_EOCnEX25OMSeBCLb4AVfbC2xMLhxc&libraries=places&callback=initMap"
   async
   defer
 ></script>

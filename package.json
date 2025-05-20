@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "@googlemaps/google-maps-services-js": "^3.4.1",
+    "@mapbox/polyline": "^1.2.1",
     "axios": "^1.9.0",
     "bootstrap": "^5.3.5",
     "cors": "^2.8.5",

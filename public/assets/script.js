@@ -4,6 +4,11 @@ let map;
     let directionsRenderer;
     let originAutocomplete, destinationAutocomplete;
 
+    function capitalizeFirstLetter(text) {
+      if (!text) return '';
+      return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
         center: { lat: 41.0082, lng: 28.9784 },
@@ -36,60 +41,56 @@ let map;
         { types: ['(cities)'] }
       );
     }
-    
-  async function getWeatherData(lat, lon) {
-  const res = await fetch(`/weather?lat=${lat}&lon=${lon}`);
-  const data = await res.json();
-  
-  if (!data || !data.daily || !data.hourly) {
-    console.error("Geçersiz veri:", data);
-    return;
+
+
+
+function getWeatherIconClass(main, description = "") {
+  main = main?.toLowerCase?.() || '';
+  description = description?.toLowerCase?.() || '';
+
+  if (description.includes('parçalı')) {
+    return '/assets/icon/partly-cloudy.png';
+  } else if (description.includes('kapalı') || description.includes('çok bulutlu')) {
+    return '/assets/icon/overcast.png';
+  } else if (description.includes('açık')) {
+    return '/assets/icon/sun.png';
+  } else if (description.includes('hafif yağmur')) {
+    return '/assets/icon/drizzle.png';
+  } else if (description.includes('yağmur')) {
+    return '/assets/icon/heavy-rain.png';
+  } else if (description.includes('kar')) {
+    return '/assets/icon/snow.png';
+  } else if (description.includes('fırtına') || description.includes('gök gürültülü')) {
+    return '/assets/icon/thunderstorm.png';
+  } else if (description.includes('sis') || description.includes('pus')) {
+    return '/assets/icon/fog.png';
+  } else {
+    switch (main) {
+      case 'clear':
+        return '/assets/icon/sun.png';
+      case 'clouds':
+        return '/assets/icon/cloudy.png';
+      case 'rain':
+        return '/assets/icon/heavy-rain.png';
+      case 'snow':
+        return '/assets/icon/snow.png';
+      case 'thunderstorm':
+        return '/assets/icon/thunderstorm.png';
+      case 'drizzle':
+        return '/assets/icon/drizzle.png';
+      case 'mist':
+      case 'haze':
+      case 'fog':
+        return '/assets/icon/fog.png';
+      default:
+        return '/assets/icon/unknown.png';
+    }
   }
-
-  renderDaily(data.daily);
-  renderHourly(data.hourly.slice(0, 24));
-}
-
-function renderDaily(daily) {
-  const container = document.getElementById('daily-weather');
-  container.innerHTML = '';
-  daily.forEach(day => {
-    const date = new Date(day.dt * 1000).toLocaleDateString();
-    container.innerHTML += `
-      <div class="weather-card">
-        <div class="weather-date">${date}</div>
-        <img class="weather-icon" src="https://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png" />
-        <div class="weather-description">${day.weather[0].description}</div>
-        <div class="weather-temp-min">Min: ${Math.round(day.temp.min)}°C</div>
-        <div class="weather-temp-max">Max: ${Math.round(day.temp.max)}°C</div>
-        <div class="weather-wind">Rüzgar: ${Math.round(day.wind_speed * 3.6)} km/s</div>
-      </div>
-    `;
-  });
 }
 
 
 
-function renderHourly(hourly) {
-  const container = document.getElementById('hourly-weather');
-  container.innerHTML = '';
-  hourly.forEach(hour => {
-    const time = new Date(hour.dt * 1000).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-
-    container.innerHTML += `
-      <div class="weather-card">
-        <div>${time}</div>
-        <img src="https://openweathermap.org/img/wn/${hour.weather[0].icon}@2x.png" />
-        <div>${hour.weather[0].description}</div>
-        <div>Sıcaklık: ${Math.round(hour.temp)}°C</div>
-        <div>Rüzgar: ${Math.round(hour.wind_speed * 3.6)} km/s</div>
-      </div>
-    `;
-  });
-}
+let routeRenderers = []; // Önceki rotaları temizlemek için
 
 async function calculateRoute() {
   const origin = document.getElementById("origin").value;
@@ -99,29 +100,134 @@ async function calculateRoute() {
   const forecastDay = document.getElementById("forecastDay").value;
 
   const button = document.getElementById("calculateBtn");
+  const loader = document.getElementById("loader");
+  const container = document.getElementById("route-weather");
+
   button.disabled = true;
+  container.innerHTML = '';
+  loader.style.display = 'block';
 
   if (!origin || !destination || !time) {
     alert("Lütfen tüm alanları doldurun.");
     button.disabled = false;
+    loader.style.display = 'none';
     return;
   }
 
-  //rota çiz
+  // Eski rotaları temizle
+  routeRenderers.forEach(r => r.setMap(null));
+  routeRenderers = [];
+  const polylines= [];
+
   const request = {
     origin: origin,
     destination: destination,
     travelMode: google.maps.TravelMode.DRIVING,
+    provideRouteAlternatives: true,
   };
+directionsService.route(request, (result, status) => {
+  if (status === "OK" && result.routes) {
+    const colors = ['#FF0000', '#008000', '#0000FF', '#FF8C00'];
 
-  directionsService.route(request, (result, status) => {
-    if (status === "OK") {
-      directionsRenderer.setDirections(result);
+    result.routes.forEach((route, index) => {
+      // 1️⃣ ROTA ÇİZ (DirectionsRenderer ile)
+      const renderer = new google.maps.DirectionsRenderer({
+        map: map,
+        directions: result,
+        routeIndex: index,
+        suppressPolylines: false, // default: rota çizilir
+        polylineOptions: {
+          strokeColor: colors[index % colors.length],
+          strokeOpacity: 0.5,
+          strokeWeight: 6,
+        },
+      });
+      routeRenderers.push(renderer);
+
+      const routeColor = colors[index % colors.length];
+
+      // 2️⃣ TIKLANABİLİR POLYLINE EKLE (aynı rota üzerinde)
+      const polyline = new google.maps.Polyline({
+        path: route.overview_path,
+        strokeColor: routeColor,
+        strokeOpacity: 0.0, // Görünmesin, sadece tıklanabilir olsun
+        strokeWeight: 15,
+        zIndex: 9999,
+        map: map
+      });
+            if (!window.polylines) {
+        window.polylines = [];
+      }
+      
+      window.polylines.push({
+        polyline,
+        originalColor: routeColor
+      });
+
+      polylines.push({
+      polyline,
+      originalColor: routeColor
+      });
+
+     polyline.addListener("click", () => {
+  console.log("Polyline'a tıklandı.");
+  console.log("Tıklanan rota index:", index);
+
+  // 1️⃣ POLYLINE GÖRSELLERİNİ GÜNCELLE
+  polylines.forEach((pl, i) => {
+    if (i === index) {
+      pl.polyline.setOptions({
+        strokeColor: pl.originalColor,
+        strokeOpacity: 1.0,
+        strokeWeight: 8,
+        zIndex: 9999
+      });
     } else {
-      console.error("Rota çizilemedi:", status);
+      pl.polyline.setOptions({
+        strokeColor: '#C0C0C0',
+        strokeOpacity: 0.3,
+        strokeWeight: 4,
+        zIndex: 1
+      });
     }
   });
+  const weatherContainer = document.getElementById("route-weather");
+  if (weatherContainer) weatherContainer.innerHTML = '';
 
+  const loader = document.getElementById("loader");
+  if (loader) loader.style.display = 'block';
+
+      const startLatLng = route.legs[0].start_location;
+      const endLatLng = route.legs[0].end_location;
+
+        fetch("/route-weather", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            origin: `${startLatLng.lat()},${startLatLng.lng()}`,
+            destination: `${endLatLng.lat()},${endLatLng.lng()}`,
+            routeIndex: index,
+            time,
+            interval,
+            forecastDay
+          }),
+        })
+        .then(res => res.json())
+        .then(data => {
+          console.log("Hava durumu verisi:", data);
+          if (loader) loader.style.display = "none";
+          showWeatherCardsOnMap(data);
+        })
+        .catch(err => {
+          console.error("Hava durumu alınamadı:", err);
+        });
+      });
+    });
+  } else {
+    console.error("Rota çizilemedi:", status);
+  }
+});
+  // Weather isteği
   try {
     const res = await fetch('/route-weather', {
       method: 'POST',
@@ -137,7 +243,6 @@ async function calculateRoute() {
       return;
     }
 
-    const container = document.getElementById('route-weather');
     container.innerHTML = '';
 
     data.forEach((item, index) => {
@@ -146,23 +251,27 @@ async function calculateRoute() {
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const hours = String(date.getHours()).padStart(2, '0');
       const minutes = String(date.getMinutes()).padStart(2, '0');
-      const timeStr = `${day}.${month} ${hours}:${minutes}`;
+      const timeStr = `${hours}:${minutes}`;
+
       const weather = item.weather;
-      const iconUrl = `https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`;
+      const weatherMain = weather.weather[0].main;
       const desc = weather.weather[0].description;
+      const iconPath = getWeatherIconClass(weatherMain, desc);
       const temp = weather.temp;
       const location = item.location || "Konum bilinmiyor";
-
       const windSpeed = typeof weather.wind_speed === 'number' ? `${Math.round(weather.wind_speed * 3.6)} km/s` : "Veri yok";
 
       container.innerHTML += `
         <div class="weather-card">
-          <div><strong>${timeStr}</strong></div>
-          <div><strong>${location}</strong></div>
-          <img src="${iconUrl}" />
-          <div>${desc}</div>
-          <div>${Math.round(temp)}°C</div>
-          <div>Rüzgar: ${windSpeed}</div>
+          <img src="${iconPath}" class="weather-icon" alt="${weatherMain}" />
+          <div class="loc">
+            <div><strong>${timeStr}</strong></div>
+            <div><strong>${location}</strong></div>
+          </div>
+          <div class="temp-windspeed">
+            <div class="temp"><img src="/assets/icon/sicaklik.svg" class="inline-icon" />${Math.round(temp)}°C</div>
+            <div class="wind"><img src="/assets/icon/ruzgar.svg" class="inline-icon" /> ${windSpeed}</div>
+          </div>
         </div>
       `;
     });
@@ -171,62 +280,162 @@ async function calculateRoute() {
     console.error("Rota hava durumu alınamadı:", error);
     alert("Bir hata oluştu. Lütfen tekrar deneyin.");
   } finally {
+    loader.style.display = 'none';
     button.disabled = false;
   }
 }
 
+          const select = document.getElementById("forecastDay");
+        
+          const daysOfWeek = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
+        
+          for (let i = 0; i < 7; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() + i);
+        
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+        
+            const formattedDate = `${day}.${month}.${year}`;
+            const dayName = i === 0 ? "Bugün" : daysOfWeek[date.getDay()];
+        
+            const option = document.createElement("option");
+            option.value = i;
+            option.textContent = `${formattedDate} - ${dayName}`;
+        
+            select.appendChild(option);
+          }
+
+          function showWeatherCardsOnMap(data) {
+  const container = document.getElementById("route-weather");
+  if (!container) return;
+
+  container.innerHTML = '';  // Önce içeriği temizle
+
+  data.forEach((item) => {
+    const date = new Date(item.estimatedTime);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const timeStr = `${hours}:${minutes}`;
+
+    const weather = item.weather;
+    const weatherMain = weather.weather[0].main;
+    const desc = weather.weather[0].description;
+    const iconPath = getWeatherIconClass(weatherMain, desc);
+    const temp = weather.temp;
+    const location = item.location || "Konum bilinmiyor";
+    const windSpeed = typeof weather.wind_speed === 'number' ? `${Math.round(weather.wind_speed * 3.6)} km/s` : "Veri yok";
+
+    // Kart html'si
+    const cardHTML = `
+      <div class="weather-card">
+        <img src="${iconPath}" class="weather-icon" alt="${weatherMain}" />
+        <div class="loc">
+          <div><strong>${timeStr}</strong></div>
+          <div><strong>${location}</strong></div>
+        </div>
+        <div class="temp-windspeed">
+          <div class="temp"><img src="/assets/icon/sicaklik.svg" class="inline-icon" />${Math.round(temp)}°C</div>
+          <div class="wind"><img src="/assets/icon/ruzgar.svg" class="inline-icon" /> ${windSpeed}</div>
+        </div>
+      </div>
+    `;
+
+    container.innerHTML += cardHTML;
+  });
+}
+
+function resetPolylinesToDefault() {
+  if (window.polylines && window.polylines.length > 0) {
+    window.polylines.forEach(({ polyline, originalColor }) => {
+      polyline.setOptions({
+        strokeColor: '#C0C0C0',
+        strokeOpacity: 0.3,
+        strokeWeight: 4,
+        zIndex: 1
+      });
+    });
+  }
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
-    const map = document.getElementById("map");
-    const showMapBtn = document.getElementById("show-map-btn");
-    const hideMapBtn = document.getElementById("hide-map-btn");
-    const weatherCardsContainer = document.getElementById("weatherCardsContainer");
+  const map = document.getElementById("map");
+  const fromInput = document.getElementById("origin");  
+  const toInput = document.getElementById("destination"); 
+  const showRouteBtn = document.getElementById("calculateBtn");
+  const weatherContainer = document.getElementById("route-weather");
 
-    // Hava durumu kartlarını temizleyen fonksiyon
-    function clearWeatherData() {
-      if (weatherCardsContainer) {
-        weatherCardsContainer.innerHTML = '';
+  if (map) {
+    map.style.display = "none";
+  }
+
+  if (fromInput) {
+    fromInput.addEventListener("focus", () => {
+      fromInput.value = '';
+    });
+  }
+
+  if (toInput) {
+    toInput.addEventListener("focus", () => {
+      toInput.value = '';
+    });
+  }
+
+const toggleMapBtn = document.createElement("button");
+toggleMapBtn.id = "toggleMap";
+toggleMapBtn.textContent = "🗺 Haritayı Göster";
+toggleMapBtn.style.display = "none";
+toggleMapBtn.style.marginTop = "10px";
+
+// Butonu .rota-buton div'ine ekle
+const rotaButonDiv = document.querySelector(".rota-buton");
+if (rotaButonDiv) {
+  rotaButonDiv.appendChild(toggleMapBtn);
+}
+
+let mapVisible = false;
+toggleMapBtn.addEventListener("click", () => {
+  mapVisible = !mapVisible;
+  map.style.display = mapVisible ? "block" : "none";
+  toggleMapBtn.textContent = mapVisible ? "🗺 Haritayı Gizle" : "🗺 Haritayı Göster";
+//burda ekledin harita url
+  const openInMapsBtn = document.getElementById("openInMapsBtn");
+
+  if (mapVisible) {
+    const origin = document.getElementById("origin").value;
+    const destination = document.getElementById("destination").value;
+
+    const mapsUrl = `https://www.google.com/maps/dir/${encodeURIComponent(origin)}/${encodeURIComponent(destination)}`;
+    
+
+    openInMapsBtn.href = mapsUrl;
+    openInMapsBtn.style.display = "inline-block";
+
+    // Eğer harita Google Maps API ile render ediliyorsa resize tetikle
+    if (window.mapInstance) {
+      if (window.google?.maps?.event?.trigger) {
+        google.maps.event.trigger(window.mapInstance, "resize");
+      }
+      if (window.mapInstance.invalidateSize) {
+        window.mapInstance.invalidateSize();
       }
     }
+  } else {
+    //harita kapattığında butonu gizlersin
+    openInMapsBtn.style.display = "none";
+  }
+});
+ //showroute calculate yani rotayı gösteri çalıştırıyor
+  showRouteBtn.addEventListener("click", () => {
+  resetPolylinesToDefault();
 
-    function updateMapButtons() {
-      if (window.innerWidth <= 768) {
-        if (map.style.display === "none" || map.offsetParent === null) {
-          showMapBtn.classList.remove("d-none");
-          hideMapBtn.classList.add("d-none");
-        } else {
-          showMapBtn.classList.add("d-none");
-          hideMapBtn.classList.remove("d-none");
-        }
-      } else {
-        showMapBtn.classList.add("d-none");
-        hideMapBtn.classList.add("d-none");
-        map.style.display = "block";
-      }
-    }
-
-    showMapBtn.addEventListener("click", () => {
-      map.style.display = "block";
-      updateMapButtons();
-    });
-
-    hideMapBtn.addEventListener("click", () => {
-      map.style.display = "none";
-      updateMapButtons();
-    });
-
-    // Nereden ve Nereye butonlarına tıklanınca hava durumu kartlarını temizle
-    const fromButton = document.getElementById("fromButton");
-    const toButton = document.getElementById("toButton");
-
-    if (fromButton) {
-      fromButton.addEventListener("click", clearWeatherData);
-    }
-
-    if (toButton) {
-      toButton.addEventListener("click", clearWeatherData);
-    }
-
-    // Sayfa yüklendiğinde ve boyut değiştiğinde kontrol et
-    updateMapButtons();
-    window.addEventListener("resize", updateMapButtons);
+  const waitForCards = setInterval(() => {
+    if (weatherContainer && weatherContainer.children.length > 0) {
+      toggleMapBtn.style.display = "inline-block";
+      clearInterval(waitForCards);
+     }
+  }, 300);
+});
 });
