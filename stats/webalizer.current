@@ -1,0 +1,213 @@
+# Webalizer V2.23-08 Incremental Data - 05/21/2025 20:47:23
+2025 5 21 20 47 23
+253 123 11 11 4 12 418414 83 16 0
+4 14 77 20 21
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+160 80 298118 8 54 10
+93 43 120296 4 29 6
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0
+1 0 118 0
+0 0 0 0
+0 0 0 0
+0 0 0 0
+5 3 8241 1
+0 0 0 0
+0 0 0 0
+0 0 0 0
+21 7 10042 7
+54 22 57729 14
+78 42 188388 27
+9 3 1883 4
+23 12 31234 8
+34 13 82653 10
+0 0 0 0
+14 7 12471 5
+0 0 0 0
+0 0 0 0
+0 0 0 0
+14 14 25655 7
+0 0 0 0
+0 0 0 0
+0 0 0 0
+0
+0
+0
+123
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+109
+0
+0
+0
+0
+0
+1
+18
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+2
+0
+0
+0
+0
+0
+# -urls- 
+/assets/icon/overcast.png
+0 2 0 47616 0 0
+/assets/icon/sun.png
+0 28 0 52195 0 0
+/assets/script.js
+0 22 0 55526 0 0
+/assets/icon/drizzle.png
+0 1 2 14356 0 0
+/assets/icon/ruzgar.svg
+0 28 0 6910 0 0
+/assets/icon/cloudy.png
+0 8 0 41007 0 0
+/assets/images/loader.svg
+0 28 0 12906 0 0
+/
+0 34 0 67819 14 4
+/assets/icon/partly-cloudy.png
+0 7 0 72978 0 0
+/route-weather
+0 46 0 40019 2 4
+/assets/icon/sicaklik.svg
+0 28 0 4290 0 0
+# End Of Table - urls
+# -sites- (monthly)
+34.19.5.172
+0 1 0 118 0 0
+-
+198.54.114.18
+0 1 1 2948 1 1747828274
+/
+4.227.36.44
+0 1 0 138 0 0
+-
+66.249.83.109
+0 2 2 5938 1 1747739540
+/
+20.171.207.168
+0 4 3 8103 1 1747719859
+/
+66.249.81.8
+0 1 1 2969 1 1747739539
+/
+66.249.83.110
+0 1 1 4633 0 0
+-
+134.209.21.31
+0 3 1 3264 1 1747740727
+/
+176.33.179.195
+0 181 73 248755 7 1747845280
+/route-weather
+88.232.168.101
+0 14 14 25655 2 1747860443
+/
+151.135.27.64
+0 44 27 115893 2 1747747921
+/route-weather
+# End Of Table - sites (monthly)
+# -sites- (daily)
+34.19.5.172
+0 1 0 118 0 0
+-
+198.54.114.18
+0 1 1 2948 1 1747828274
+/
+176.33.179.195
+0 77 28 91575 3 1747845280
+/route-weather
+88.232.168.101
+0 14 14 25655 2 1747860443
+/
+# End Of Table - sites (daily)
+# -referrers- 
+android-app://com.google.android.googlequicksearchbox/
+0 3
+https://tasarim.bulutsoft.com.tr/
+0 207
+- (Direct Request)
+0 42
+http://tasarim.bulutsoft.com.tr
+0 1
+# End Of Table - referrers
+# -agents- 
+Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36
+0 42
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15
+0 4
+Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)
+0 5
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36
+0 31
+Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Sa
+0 126
+Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15
+0 1
+com.apple.WebKit.Networking/20619.2.8.11.9 Network/4277.41.2 macOS/15.1
+0 4
+Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148
+0 14
+WhatsApp/2.23.20.0
+0 2
+Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36
+0 3
+Mozilla/5.0 (Linux; Android 7.0; SM-G930V Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.125 Mobile Sa
+0 4
+Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36
+0 16
+# End Of Table - agents
+# -search strings- 
+# End Of Table - search strings
+# -usernames- 
+# End Of Table - usernames

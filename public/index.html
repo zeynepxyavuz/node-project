@@ -362,7 +362,6 @@ h1.display-5 {
     <h1 class="display-5">🌤 Hava Durumu Uygulaması</h1>
   </div>
 
-
   <div class="harita-alti">
   <div class="harita-alti-ust">
     <div class="seyehat-bilgiler">
@@ -385,7 +384,6 @@ h1.display-5 {
           <select id="forecastDay" class="form-select"></select>
         </div>
       </div>
-
       <!-- Alt kısım: tahmin aralığı ve buton -->
       <div class="seyehat-bilgiler-alt">
         <div class="interval">
@@ -394,36 +392,39 @@ h1.display-5 {
             <option value="15">15 dk</option>
             <option value="30">30 dk</option>
             <option value="45">45 dk</option>
-            <option value="60" selected>1 saat</option>
+            <option value="60" selected >1 saat</option>
           </select>
           <div class="interval-text" class="form-label">aralıklarla getirilsin</div>
         
         <div class="buton-gonder">
-  
         <div class="rota-buton">
           <button id="calculateBtn" onclick="calculateRoute()">📍 Rotayı Göster</button>
         </div>
-
         </div>
+
         </div>
       </div>
     
   </div>
 
   <h2></h2>
+
     <div id="map" style="height: 400px; width: 100%; display: none;"></div>
-    <a id="openInMapsBtn" style="display: none;" class="btn btn-outline-primary" target="_blank">
+    <a id="openInMapsBtn" href="#" style="display: none;" class="btn btn-outline-primary">
              Google Haritalar'da Aç
         </a>
+
+        <div id="dailyWarning" style="display: none; background-color: #fff3cd; color: #856404; padding: 10px; border: 1px solid #ffeeba; border-radius: 5px; margin-top: 10px;">
+  <strong>☆ Bilgilendirme:</strong> 7. günden sonrası için veriler <strong>günlük</strong> ortalamadır, <strong>saatlik</strong> veri içermez.
+</div>
+
   <div class="weather-container" id="route-weather"></div>
+
   <div id="loader" style="display: none; text-align: center; margin-top: 20px;">
     <img src="assets/images/loader.svg" alt="Yükleniyor..." width="80">
   </div>
 
    
-
-
-
 <script src="/assets/script.js"></script>
 
 <script
@@ -431,6 +432,10 @@ h1.display-5 {
   async
   defer
 ></script>
+
+
+
+
 
 </body>
 </html>

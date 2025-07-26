@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { getWeather, getCoordinates, reverseGeocode, getRouteInfo, getCoordinatesFlexible } = require('./services/service');
+const { getWeather, getCoordinates, reverseGeocode, getRouteInfo, getCoordinatesFlexible, getDailyWeather } = require('./services/service');
 const dayjs = require('dayjs');
 const axios = require('axios');
 dotenv.config();
@@ -30,9 +30,8 @@ app.post('/route-weather', async (req, res) => {
     if (!originCoord || !destinationCoord) {
       return res.status(404).json({ error: 'Konumlar bulunamadı' });
     }
-    // getRouteInfo fonksiyonunu routeIndex parametreli hale getir
-    const distance = await getRouteInfo(origin, destination, selectedRouteIndex);
 
+    const distance = await getRouteInfo(origin, destination, selectedRouteIndex);
     if (!distance) {
       return res.status(500).json({ error: 'Rota bilgisi alınamadı' });
     }
@@ -59,58 +58,100 @@ app.post('/route-weather', async (req, res) => {
       const lat = originCoord.lat + (destinationCoord.lat - originCoord.lat) * ratio;
       const lon = originCoord.lon + (destinationCoord.lon - originCoord.lon) * ratio;
 
-      const weatherData = await getWeather(lat, lon);
+      const cityName = await reverseGeocode(lat, lon);
 
-      const hourly = weatherData.hourly;
-      const targetHourIndex = Math.round((estimatedTime.getTime() - Date.now()) / (60 * 60 * 1000));
-      const hourData = hourly[targetHourIndex];
+      if (parsedDay <= 6) {
+        const weatherData = await getWeather(lat, lon);
+        const hourly = weatherData.hourly;
+        const estimatedTimestamp = Math.floor(estimatedTime.getTime() / 1000);
 
-      if (hourData) {
-        const cityName = await reverseGeocode(lat, lon);
+        const matchedHour = hourly.find(h =>
+          Math.abs(h.dt - estimatedTimestamp) < 3600
+        );
+
+        if (matchedHour) {
+          hourlyForecasts.push({
+            estimatedTime: estimatedTime.toISOString(),
+            location: cityName,
+            lat,
+            lon,
+            weather: {
+              temperature_2m: matchedHour.temp,
+              wind_speed_10m: matchedHour.wind_speed,
+              weatherCode: matchedHour.code,
+              time: dayjs(estimatedTime).format('HH:mm')
+            }
+          });
+        } else {
+          console.warn(`Saatlik veri bulunamadı: ${estimatedTime.toISOString()}`);
+        }
+      } else {
+        const dateStr = dayjs(estimatedTime).format('YYYY-MM-DD');
+        const dailyData = await getDailyWeather(lat, lon, dateStr);
         hourlyForecasts.push({
           estimatedTime: estimatedTime.toISOString(),
           location: cityName,
           lat,
           lon,
           weather: {
-            temp: hourData.temp,
-            weather: hourData.weather,
-            wind_speed: hourData.wind_speed,
-            time: dayjs(hourData.dt * 1000).format('HH:mm')
+            temperature_2m_max: dailyData.max_temp,
+            temperature_2m_min: dailyData.min_temp,
+            wind_speed_10m: dailyData.wind_speed,
+            weatherCode: dailyData.weather_code,
+            time: dayjs(estimatedTime).format('DD.MM') + " (günlük)"
           }
         });
-      } else {
-        console.warn(` Uygun saatlik veri bulunamadı (tahmini saat: ${estimatedTime.toISOString()})`);
       }
     }
-    const arrivalTime = new Date(startDate.getTime() + travelMinutes * 60000);
-    const finalWeatherData = await getWeather(destinationCoord.lat, destinationCoord.lon);
-    const baseTimestamp = finalWeatherData.hourly[0].dt * 1000;
-    const timeDiffMs = arrivalTime.getTime() - baseTimestamp;
-    const finalHourIndex = Math.round(timeDiffMs / (60 * 60 * 1000));
-    const finalHourData = finalWeatherData.hourly[finalHourIndex];
 
-    if (finalHourData) {
-      const finalCityName = await reverseGeocode(destinationCoord.lat, destinationCoord.lon);
+    // Varış noktası için son hava durumu
+    //saatlik
+    const arrivalTime = new Date(startDate.getTime() + travelMinutes * 60000);
+    const arrivalCity = await reverseGeocode(destinationCoord.lat, destinationCoord.lon);
+
+    if (parsedDay <= 6) {
+      const finalWeatherData = await getWeather(destinationCoord.lat, destinationCoord.lon);
+      const arrivalTimestamp = Math.floor(arrivalTime.getTime() / 1000);
+      const matchedArrival = finalWeatherData.hourly.find(h =>
+        Math.abs(h.dt - arrivalTimestamp) < 3600
+      );
+
+      if (matchedArrival) {
+        hourlyForecasts.push({
+          estimatedTime: arrivalTime.toISOString(),
+          location: arrivalCity,
+          lat: destinationCoord.lat,
+          lon: destinationCoord.lon,
+          weather: {
+            temperature_2m: matchedArrival.temp,
+            wind_speed_10m: matchedArrival.wind_speed,
+            weatherCode: matchedArrival.code,
+            time: dayjs(arrivalTime).format('HH:mm')
+          }
+        });
+      }
+      //günlük
+    } else {
+      const arrivalDateStr = dayjs(arrivalTime).format("YYYY-MM-DD");
+      const dailyArrival = await getDailyWeather(destinationCoord.lat, destinationCoord.lon, arrivalDateStr);
+
       hourlyForecasts.push({
         estimatedTime: arrivalTime.toISOString(),
-        location: finalCityName,
+        location: arrivalCity,
         lat: destinationCoord.lat,
         lon: destinationCoord.lon,
         weather: {
-          temp: finalHourData.temp,
-          weather: finalHourData.weather,
-          wind_speed: finalHourData.wind_speed,
-          time: dayjs(finalHourData.dt * 1000).format('HH:mm')
+          temperature_2m_max: dailyArrival.max_temp,
+          temperature_2m_min: dailyArrival.min_temp,
+          wind_speed_10m: dailyArrival.wind_speed,
+          weatherCode: dailyArrival.weather_code,
+          time: dayjs(arrivalTime).format("DD.MM") + " (günlük)"
         }
       });
-      console.log(` Varış Noktası: ${finalCityName}, ${dayjs(finalHourData.dt * 1000).format('HH:mm')}`);
-    } else {
-      console.warn(" Varış noktasına ait saatlik veri bulunamadı.");
     }
 
     res.json(hourlyForecasts);
-    
+
   } catch (error) {
     console.error("Rota hava durumu hatası:", error);
     res.status(500).json({ error: 'Rota hava durumu alınamadı', detay: error.message });
