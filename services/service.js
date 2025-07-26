@@ -48,10 +48,10 @@ async function getCoordinatesFlexible(location) {
 
 async function getWeather(lat, lon) {
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode,windspeed_10m&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max&timezone=Europe/Istanbul`;
-  
+
   const res = await fetch(url);
   if (!res.ok) throw new Error('Open-Meteo API hatası');
-  
+
   const data = await res.json();
 
   if (!data.hourly || !data.hourly.time) {
@@ -91,7 +91,7 @@ function cleanLocation(fullLocation) {
   let parts = fullLocation.split(',').map(p => p.trim());
 
   if (parts.length === 0) return '';
-  const city = parts[0]; 
+  const city = parts[0];
   const country = parts.length > 1 ? parts[parts.length - 1] : 'Türkiye';
   if (city.toLowerCase() === country.toLowerCase()) {
     return city;
@@ -135,7 +135,7 @@ const reverseGeocode = async (lat, lon) => {
       if (city && district) return `${city} - ${district}`;
       if (city) return city;
       if (district) return district;
-      console.log("🔍 Google Geocode sonucu:", JSON.stringify(googleResults, null, 2));
+      // console.log("🔍 Google Geocode sonucu:", JSON.stringify(googleResults, null, 2));
 
     }
 
@@ -147,11 +147,11 @@ const reverseGeocode = async (lat, lon) => {
 
     if (mapboxFeatures.length > 0) {
       const cityFeature = mapboxFeatures.find(f =>
-  ["place", "locality", "neighborhood"].some(type => f.place_type.includes(type))
-);
-const regionFeature = mapboxFeatures.find(f =>
-  ["region", "district"].some(type => f.place_type.includes(type))
-);
+        ["place", "locality", "neighborhood"].some(type => f.place_type.includes(type))
+      );
+      const regionFeature = mapboxFeatures.find(f =>
+        ["region", "district"].some(type => f.place_type.includes(type))
+      );
 
       if (cityFeature && regionFeature) {
         return `${regionFeature.text} - ${cityFeature.text}`;
